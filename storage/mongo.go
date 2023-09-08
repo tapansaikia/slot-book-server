@@ -12,7 +12,7 @@ import (
 const uri = "mongodb+srv://tsaikia:wQzDAZFO5yQJdu85@cluster0.kmilyai.mongodb.net/?retryWrites=true&w=majority"
 
 type MongoStorage struct {
-	client *mongo.Client
+	Client *mongo.Client
 }
 
 func NewMongoStorage() *MongoStorage {
@@ -40,7 +40,7 @@ func NewMongoStorage() *MongoStorage {
 	fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
 
 	return &MongoStorage{
-		client: client,
+		Client: client,
 	}
 }
 

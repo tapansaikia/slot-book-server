@@ -15,11 +15,24 @@ type Server struct {
 	store      storage.Storage
 }
 
+type HandlerContext struct {
+	store storage.Storage
+}
+
 func NewServer(listenAddr string, store storage.Storage) *Server {
 	return &Server{
 		listenAddr: listenAddr,
 		store:      store,
 	}
+}
+
+// NewHandlerContext constructs a new HandlerContext,
+// ensuring that the dependencies are valid values
+func NewHandlerContext(store storage.Storage) *HandlerContext {
+	if store == nil {
+		panic("nil MongoDB session!")
+	}
+	return &HandlerContext{store}
 }
 
 func (s *Server) Start() error {
@@ -35,7 +48,10 @@ func (s *Server) Start() error {
 		log.Printf("==> CERTIFICATE: %v", config.Certificate)
 	}
 
-	router := newRouter()
+	//construct the handler context
+	hctx := NewHandlerContext(s.store)
+
+	router := newRouter(hctx)
 	n := negroni.Classic()
 
 	n.UseHandler(router)
@@ -50,7 +66,7 @@ func (s *Server) Start() error {
 }
 
 // NewRouter is the constructor for all my routes
-func newRouter() *mux.Router {
+func newRouter(hctx *HandlerContext) *mux.Router {
 
 	router := mux.NewRouter().StrictSlash(true)
 
@@ -58,12 +74,12 @@ func newRouter() *mux.Router {
 		Methods("GET").
 		Path("/ws").
 		Name("Communication Channel").
-		HandlerFunc(serveWs)
+		HandlerFunc(hctx.serveWs)
 
 	router.
-		Methods("GET").
-		PathPrefix("/").
-		Name("Static").
-		Handler(http.FileServer(http.Dir("./htdocs")))
+		Methods("POST").
+		Path("/book").
+		Name("Book Slot").
+		HandlerFunc(hctx.bookSlot)
 	return router
 }

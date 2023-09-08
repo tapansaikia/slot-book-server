@@ -42,7 +42,9 @@ func handleErr(w http.ResponseWriter, err error, status int) {
 	http.Error(w, string(msg), status)
 }
 
-func serveWs(w http.ResponseWriter, r *http.Request) {
+func (ctx *HandlerContext) serveWs(w http.ResponseWriter, r *http.Request) {
+	//...use ctx.store to query the database...
+
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		handleErr(w, err, http.StatusInternalServerError)
